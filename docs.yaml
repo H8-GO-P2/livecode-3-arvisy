@@ -1,0 +1,493 @@
+openapi: "3.0.0"
+info:
+  title: "FTGO Phase 2 Livecode 3 API Contract"
+  description: "Pastikan semua endpoint pada livecode mengikuti ketentuan yang tercantum pada dokumen ini. Tanyakan pada instruktur/tim akademik yang bertugas jika ada hal yang perlu diklarifikasi dan ditanyakan. Kesalahan pemahaman requirement bisa mengakibatkan pengurangan nilai livecode"
+  version: "1.0"
+  contact:
+    name: "FTGO Academic Team"
+servers:
+  - url: "http://localhost:8080"
+    description: "development/livecode"
+
+paths:
+  '/users/register':
+    post:
+      tags:
+        - user
+      summary: "register user baru"
+      description: "register user baru ke dalam aplikasi"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/registerUser"
+      responses:
+        201:
+          description: "response berhasil registrasi user baru"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "success register"
+                  user:
+                    $ref: "#/components/schemas/user"
+        400:
+          $ref: "#/components/responses/badRequest"
+        500:
+          $ref: "#/components/responses/internalServerError"
+  '/users/login':
+    post:
+      tags:
+        - user
+      summary: "login user yang sudah terdaftar"
+      description: "login user yang sebelumnya sudah berhasil melakukan registrasi, akan membalikan data akses token"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/loginUser"
+      responses:
+        200:
+          description: "response berhasil login"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/loginSuccess"
+        400:
+          $ref: "#/components/responses/badRequest"
+        401:
+          $ref: "#/components/responses/loginFailedInvalidCred"
+        500:
+          $ref: "#/components/responses/internalServerError"    
+
+  '/users/carts':
+    get:
+      tags:
+        - cart
+      summary: "menampilkan seluruh data cart"
+      description: "menampilkan seluruh data cart"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: "response berhasil menampilkan seluruh data cart"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/carts"
+        401:
+          $ref: "#/components/responses/loginFailedInvalidCred"
+        500:
+          $ref: "#/components/responses/internalServerError"    
+    post:
+      tags:
+        - cart
+      summary: "menambahkan data cart"
+      description: "menambahkan data cart"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/postCart"
+      responses:
+        201:
+          description: "response berhasil menambahkan data cart"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    default: "success add product to cart"
+        400:
+          $ref: "#/components/responses/badRequest"
+        401:
+          $ref: "#/components/responses/loginFailedInvalidCred"
+        500:
+          $ref: "#/components/responses/internalServerError"  
+  '/users/carts/:id':
+    delete:
+      tags:
+        - cart
+      summary: "menghapus data product pada cart"
+      description: "menghapus data product pada cart"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: "response berhasil menghapus data product pada cart"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    default: "success remove product from cart"
+        400:
+          $ref: "#/components/responses/badRequest"
+        401:
+          $ref: "#/components/responses/loginFailedInvalidCred"
+        404:
+          $ref: "#/components/responses/notFound"
+        500:
+          $ref: "#/components/responses/internalServerError"  
+
+  '/users/orders':
+    get:
+      tags:
+        - order
+      summary: "menampilkan seluruh data order"
+      description: "menampilkan seluruh data order"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: "response berhasil menampilkan seluruh data order"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/orders"
+        401:
+          $ref: "#/components/responses/loginFailedInvalidCred"
+        500:
+          $ref: "#/components/responses/internalServerError"    
+    post:
+      tags:
+        - order
+      summary: "membuat data order"
+      description: "membuat data order baru berdasarkan data product yang tersimpan pada carts"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        201:
+          description: "response berhasil menambahkan data order"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    default: "success create order data"
+        400:
+          $ref: "#/components/responses/badRequest"
+        401:
+          $ref: "#/components/responses/loginFailedInvalidCred"
+        500:
+          $ref: "#/components/responses/internalServerError"  
+  
+  '/products':
+    get:
+      tags:
+        - product
+      summary: "menampilkan semua data product yang tersedia"
+      description: "menampilkan semua data product yang tersedia"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: "response berhasil menampilkan semua data product"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/product"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        500:
+          $ref: "#/components/responses/internalServerError"
+  '/products/:id':
+    get:
+      tags:
+        - product
+      summary: "menampilkan data product sesuai dengan id"
+      description: "menampilkan semua data product sesuai dengan id"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: "response berhasil menampilkan data product"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/product"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/notFound"
+        500:
+          $ref: "#/components/responses/internalServerError"
+
+components:
+  parameters:
+    authorization:
+      name: Authorization
+      description: "authorization key yang didapatkan ketika berhasil login"
+      in: header
+      schema:
+        type: "string"
+    articleId:
+      name: "id"
+      in: "path"
+      description: "parameter id akan yang akan digunakan untuk keperluan action pada endpoint"
+      required: true
+      schema:
+        type: "number"
+
+    id:
+      name: "id"
+      in: "path"
+      description: "parameter id akan yang akan digunakan untuk keperluan action pada endpoint"
+      required: true
+      schema:
+        type: "number"
+    
+    
+  schemas:
+    registerUser:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          default: "example full name"
+        email:
+          type: "string"
+          default: "example_email"
+        password:
+          type: "string"
+          default: "example_password"
+      required:
+        - name
+        - username
+        - password
+
+    loginUser:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+          default: "example_email"
+        password:
+          type: "string"
+          default: "example_password"
+      required:
+        - email
+        - password
+    
+    user:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          default: "example full name"
+        email:
+          type: "string"
+          default: "example_email"
+
+    loginSuccess:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+          default: "example token"
+        message:
+          type: "string"
+          default: "login success"
+    
+    loginInvalidCredentials:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          default: "invalid username/password"
+
+    product:
+      type: "object"
+      properties:
+        id:
+          type: "number"
+          default: 1
+        name:
+          type: "string"
+          default: "example product name"
+        description:
+          type: "string"
+          default: "example product description"
+        price:
+          type: "number"
+          default: 1000
+    
+    postCart:
+      type: "object"
+      properties:
+        product_id:
+          type: "number"
+          default: 1
+        quantity:
+          type: "number"
+          default: 1
+
+    carts:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          id:
+            type: "number"
+            default: 1
+          name:
+            type: "string"
+            default: "example product name"
+          description:
+            type: "string"
+            default: "example product description"
+          price:
+            type: "number"
+            default: 1000
+          quantity:
+            type: "number"
+            default: 1
+    
+    orders:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          id:
+            type: "number"
+            default: 1
+          total_price:
+            type: "number"
+            default: 1000
+          created_at:
+            type: "string"
+            format: "date-time"
+            default: "2017-07-21T17:32:28Z"
+          items:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                id:
+                  type: "number"
+                  default: 1
+                name:
+                  type: "string"
+                  default: "example product name"
+                description:
+                  type: "string"
+                  default: "example product description"
+                price:
+                  type: "number"
+                  default: 1000
+                quantity:
+                  type: "number"
+                  default: 1
+
+
+    errorInternalServer:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          example: "internal server error"
+        detail:
+          type: "string"
+          example: "error generated from err.Error() object"
+    errorBadRequest:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          example: "example error: name is required"
+    errorNotFound:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          example: "data not found"
+    errorUnauthorized:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          example: "invalid access token"
+    errorForbidden:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          example: "you're not authorized to perform this action"
+          
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      
+    
+  responses:
+    internalServerError:
+      description: "internal server error; semua error lain seperti error bad request dan error not found"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorInternalServer"
+    badRequest:
+      description: "bad request error"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorBadRequest"
+    notFound:
+      description: "not found error"
+      content:
+        application/json:
+          schema:
+           $ref: "#/components/schemas/errorNotFound"
+    loginFailedInvalidCred:
+      description: "kesalahan username/password"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/loginInvalidCredentials"
+    unauthorized:
+      description: "kesalahan pada akses token yang disertakan di headers"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorUnauthorized"
+    forbidden:
+      description: "kesalahan pada hak akses yang dimiliki user yang sedang login(akses token)"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorForbidden"
+    
