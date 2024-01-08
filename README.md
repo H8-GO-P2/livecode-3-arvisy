@@ -150,4 +150,11 @@ VALUES
 ### Deployment
 Deployemnt URL: `__________` (isi dengan url deployment)
 
+DB_Deploy: https://ghcr.io/railwayapp-templates/postgres-ssl
+.env file:
+DB_USER=postgres
+DB_PASSWORD=5FEdFGB4a2*gD5f55CA**44*C1-f32aB
+DB_HOST=roundhouse.proxy.rlwy.net
+DB_PORT=43055
+DB_NAME=railway
 
